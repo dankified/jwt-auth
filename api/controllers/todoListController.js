@@ -1,60 +1,45 @@
 const mongoose = require('mongoose');
-const Todo = mongoose.model('Todo');
-const {findAll} = require('../utils/findAll');
+const Task = mongoose.model('Todo');
 
-exports.createTodo = function(req, res) {
-	const newTodo = new Todo(req.body);
-	newTodo.save((err, todo) => {
-		if(err) {
-			return res.status(400).send({
-				message: err
-			});
-		} else {
-			return res.json(todo);
-		}
-	})
+exports.listAllTodos = function(req, res) {
+  Task.find({}, function(err, task) {
+    if (err)
+      res.send(err);
+    res.json(task);
+  });
 };
 
-exports.findTodo = function(req, res) {
-	Todo.findOne({'title': req.body.title}, function(err, todo) {
-		if(err) {
-			return res.status(400).send({
-				message: err
-			});
-		} else {
-			return res.json(todo);
-		}
-	})
+exports.createTodo = function(req, res) {
+  var new_task = new Task(req.body);
+  new_task.save(function(err, task) {
+    if (err)
+      res.send(err);
+    res.json(task);
+  });
+};
+
+exports.readTodo = function(req, res) {
+  Task.findById(req.params.taskId, function(err, task) {
+    if (err)
+      res.send(err);
+    res.json(task);
+  });
 };
 
 exports.updateTodo = function(req, res) {
-	Todo.findOne({'title': req.body.title}, function(err, todo) {
-		if(err) {
-			return res.status(400).send({
-				message: err
-			});
-		} else {
-			todo.save((err, todo) => {
-				if(err) {
-					return res.status(400).send({
-						message: err
-					});
-				} else {
-					return res.json(todo)
-				}
-			})
-		}
-	})
-}
+  Task.findOneAndUpdate({_id: req.params.taskId}, req.body, {new: true}, function(err, task) {
+    if (err)
+      res.send(err);
+    res.json(task);
+  });
+};
 
 exports.deleteTodo = function(req, res) {
-	Todo.deleteOne({'title': req.body.title}, function(err, todo) {
-		if(err) {
-			return res.status(400).send({
-				message: err
-			});
-		} else {
-			return findAll(Todo, res);
-		}
-	})
-}
+  Task.remove({
+    _id: req.params.taskId
+  }, function(err, task) {
+    if (err)
+      res.send(err);
+    res.json({ message: 'Task successfully deleted' });
+  });
+};
